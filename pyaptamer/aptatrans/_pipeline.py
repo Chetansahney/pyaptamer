@@ -240,7 +240,7 @@ class AptaTransPipeline:
 
         # generate aptamer candidates
         candidates = {}
-        max_attempts = max(n_candidates * 10, n_candidates)
+        max_attempts = n_candidates * 10
         max_stalled_attempts = max(n_candidates * 3, 10)
         attempts = 0
         stalled_attempts = 0
