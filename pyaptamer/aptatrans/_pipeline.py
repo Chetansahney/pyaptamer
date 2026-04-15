@@ -87,9 +87,9 @@ class AptaTransPipeline:
     >>> imap = pipeline.get_interaction_map(aptamer, target)
     >>> candidates = pipeline.recommend(target, n_candidates=1, verbose=False)
     """
-    _STALLED_ATTEMPT_MULTIPLIER = 3
-    _MIN_STALLED_ATTEMPTS = 10
-    _MAX_ATTEMPT_MULTIPLIER = 10
+    _STALLED_ATTEMPTS_PER_CANDIDATE = 3
+    _MIN_STALLED_ATTEMPTS_THRESHOLD = 10
+    _MAX_ATTEMPTS_PER_CANDIDATE = 10
 
     def __init__(
         self,
@@ -243,10 +243,10 @@ class AptaTransPipeline:
 
         # generate aptamer candidates
         candidates = {}
-        max_attempts = n_candidates * self._MAX_ATTEMPT_MULTIPLIER
+        max_attempts = n_candidates * self._MAX_ATTEMPTS_PER_CANDIDATE
         max_stalled_attempts = max(
-            n_candidates * self._STALLED_ATTEMPT_MULTIPLIER,
-            self._MIN_STALLED_ATTEMPTS,
+            n_candidates * self._STALLED_ATTEMPTS_PER_CANDIDATE,
+            self._MIN_STALLED_ATTEMPTS_THRESHOLD,
         )
         attempts = 0
         stalled_attempts = 0
