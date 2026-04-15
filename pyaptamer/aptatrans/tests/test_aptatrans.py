@@ -420,6 +420,8 @@ class TestAptaTransPipeline:
         )
 
         class DuplicateMCTS:
+            """Mock MCTS that always returns the same candidate to force stalling."""
+
             def __init__(self, **kwargs):
                 pass
 
