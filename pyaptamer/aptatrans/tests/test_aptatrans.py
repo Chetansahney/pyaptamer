@@ -439,6 +439,9 @@ class TestAptaTransPipeline:
 
         assert isinstance(candidates, set)
         assert len(candidates) == 1
+        candidate, sequence, _ = next(iter(candidates))
+        assert candidate == "APTA_DUP"
+        assert sequence == "sequence_dup"
 
     @pytest.mark.parametrize(
         "device, candidate, target",
