@@ -6,6 +6,8 @@ candidate aptamers recommendation.
 __author__ = ["nennomp"]
 __all__ = ["AptaTransPipeline"]
 
+import warnings
+
 import torch
 from torch import Tensor
 
@@ -238,11 +240,32 @@ class AptaTransPipeline:
 
         # generate aptamer candidates
         candidates = {}
-        while len(candidates) < n_candidates:
+        max_attempts = max(n_candidates * 10, n_candidates)
+        max_stalled_attempts = max(n_candidates * 3, 10)
+        attempts = 0
+        stalled_attempts = 0
+        while len(candidates) < n_candidates and attempts < max_attempts:
+            attempts += 1
             result = mcts.run(verbose=verbose)
             candidate, sequence, score = tuple(result.values())
             if candidate not in candidates:
                 candidates[candidate] = (candidate, sequence, score.item())
+                stalled_attempts = 0
+            else:
+                stalled_attempts += 1
+                if stalled_attempts >= max_stalled_attempts:
+                    break
+
+        if len(candidates) < n_candidates:
+            warnings.warn(
+                (
+                    "Stopped candidate generation early after "
+                    f"{attempts} attempts: generated {len(candidates)} unique "
+                    f"candidate(s), requested {n_candidates}."
+                ),
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         if verbose:
             for candidate, sequence, score in candidates.values():

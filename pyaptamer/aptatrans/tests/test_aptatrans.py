@@ -397,6 +397,45 @@ class TestAptaTransPipeline:
         assert isinstance(candidates, set)
         assert len(candidates) == n_candidates  # should be exactly n_candidates
 
+    def test_recommend_stops_when_generation_stalls(self, monkeypatch):
+        """Check recommend() early-stops and warns when only duplicates are generated."""
+        device = torch.device("cpu")
+        model = MockAptaTransNeuralNet(device)
+        pipeline = AptaTransPipeline(
+            device=device,
+            model=model,
+            prot_words={"AAA": 0.8, "AAC": 0.6, "AAG": 0.4},
+            depth=5,
+        )
+
+        class MockExperiment:
+            def evaluate(self, candidate):
+                return torch.tensor(0.75)
+
+        monkeypatch.setattr(
+            "pyaptamer.aptatrans._pipeline.AptamerEvalAptaTrans",
+            lambda **kwargs: MockExperiment(),
+        )
+
+        class DuplicateMCTS:
+            def __init__(self, **kwargs):
+                pass
+
+            def run(self, verbose: bool = False):
+                return {
+                    "candidate": "APTA_DUP",
+                    "sequence": "sequence_dup",
+                    "score": torch.tensor(0.9),
+                }
+
+        monkeypatch.setattr("pyaptamer.aptatrans._pipeline.MCTS", DuplicateMCTS)
+
+        with pytest.warns(RuntimeWarning, match="Stopped candidate generation early"):
+            candidates = pipeline.recommend(target="AUGCAUGC", n_candidates=3)
+
+        assert isinstance(candidates, set)
+        assert len(candidates) == 1
+
     @pytest.mark.parametrize(
         "device, candidate, target",
         [
