@@ -398,7 +398,9 @@ class TestAptaTransPipeline:
         assert len(candidates) == n_candidates  # should be exactly n_candidates
 
     def test_recommend_stops_when_generation_stalls(self, monkeypatch):
-        """Check recommend() early-stops and warns when only duplicates are generated."""
+        """
+        Check recommend() early-stops and warns when only duplicates are generated.
+        """
         device = torch.device("cpu")
         model = MockAptaTransNeuralNet(device)
         pipeline = AptaTransPipeline(
